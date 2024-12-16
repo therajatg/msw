@@ -3,20 +3,14 @@ import { usePeopleQuery } from "./query";
 import { useState } from "react";
 import "./people.css";
 
-interface SortConfig {
-  key: keyof Person;
-  direction: "ascending" | "descending";
-}
-
 export function People() {
   const { data: people, loading, error } = usePeopleQuery();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortConfig, setSortConfig] = useState<SortConfig>({
-    key: "name",
-    direction: "ascending",
-  });
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [pageSize, setPageSize] = useState<number>(10);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [sortDirection, setSortDirection] = useState<
+    "ascending" | "descending"
+  >("ascending");
 
   const renderCells = ({ name, show, actor, movies, dob }: Person) => (
     <>
@@ -49,10 +43,10 @@ export function People() {
   );
 
   const sortedPeople = filteredPeople.sort((a, b) => {
-    if (sortConfig.direction === "ascending") {
-      return a[sortConfig.key] > b[sortConfig.key] ? 1 : -1;
+    if (sortDirection === "ascending") {
+      return a["name"] > b["name"] ? 1 : -1;
     }
-    return a[sortConfig.key] < b[sortConfig.key] ? 1 : -1;
+    return a["name"] < b["name"] ? 1 : -1;
   });
 
   const totalItems = sortedPeople.length;
@@ -62,13 +56,9 @@ export function People() {
   const currentPeople = sortedPeople.slice(startIndex, endIndex);
 
   const handleSort = (key: keyof Person) => {
-    setSortConfig((prevConfig) => ({
-      key,
-      direction:
-        prevConfig.key === key && prevConfig.direction === "ascending"
-          ? "descending"
-          : "ascending",
-    }));
+    setSortDirection((prev) =>
+      prev === "ascending" ? "descending" : "ascending"
+    );
   };
 
   return (
@@ -96,12 +86,7 @@ export function People() {
       <table>
         <thead>
           <tr>
-            <th
-              onClick={() => handleSort("name")}
-              aria-sort={
-                sortConfig.key === "name" ? sortConfig.direction : undefined
-              }
-            >
+            <th onClick={() => handleSort("name")} aria-sort={sortDirection}>
               Name
             </th>
             <th>Show</th>
