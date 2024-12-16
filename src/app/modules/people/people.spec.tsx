@@ -45,6 +45,12 @@ describe("People", () => {
      * You can do so for this test
      */
 
+    server.use(
+      rest.get(getPeople.info.path, (_, res, ctx) => {
+        return res(ctx.status(200), ctx.json([]));
+      })
+    );
+
     await renderPeople();
 
     expect(screen.getByText("No People Available.")).toBeInTheDocument();
