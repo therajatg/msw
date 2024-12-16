@@ -1,8 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vitest";
-import { rest } from "msw";
-
+import { http, HttpResponse } from "msw";
 import { server } from "../../../api-mocks/server";
 import { getPeople } from "../../../api-mocks/handlers/people.handler";
 import { renderWithProviders, waitForLoading } from "../../shared/util";
@@ -10,14 +9,12 @@ import { People } from "./people.component";
 
 const renderPeople = async () => {
   renderWithProviders(<People />);
-
   await waitForLoading("Fetching People");
 };
 
 describe("People", () => {
   test("renders", async () => {
     await renderPeople();
-
     expect(screen.getByRole("table")).toBeInTheDocument();
   });
 
@@ -26,7 +23,9 @@ describe("People", () => {
      * The following can be changed if MSW is not being used
      */
     server.use(
-      rest.get(getPeople.info.path, (_, res) => res.networkError("Failure"))
+      http.get(getPeople.info.path, () => {
+        return new HttpResponse(null, { status: 500 });
+      })
     );
     /****************************************************************************/
 
@@ -46,8 +45,8 @@ describe("People", () => {
      */
 
     server.use(
-      rest.get(getPeople.info.path, (_, res, ctx) => {
-        return res(ctx.status(200), ctx.json([]));
+      http.get(getPeople.info.path, () => {
+        return HttpResponse.json([]);
       })
     );
 
@@ -60,7 +59,6 @@ describe("People", () => {
     await renderPeople();
 
     expect(screen.getByRole("table")).toBeInTheDocument();
-
     expect(screen.getAllByRole("row").slice(1)).toHaveLength(10);
   });
 

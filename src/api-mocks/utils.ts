@@ -1,6 +1,8 @@
-import { context, createResponseComposition } from "msw";
+import { delay } from "msw";
 
-export const delayedResponse = createResponseComposition(
-  undefined,
-  process.env.NODE_ENV !== "test" ? [context.delay(500)] : []
-);
+export const delayedResponse = async (response: Response) => {
+  if (process.env.NODE_ENV !== "test") {
+    await delay(500);
+  }
+  return response;
+};
